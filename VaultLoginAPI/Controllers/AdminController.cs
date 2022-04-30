@@ -1,8 +1,6 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json.Linq;
-using System.Text.Json.Nodes;
+﻿using Microsoft.AspNetCore.Mvc;
 using VaultLoginAPI.Models;
+using VaultLoginAPI.Models.VaultResponses;
 using VaultLoginAPI.Services;
 
 namespace VaultLoginAPI.Controllers
@@ -24,12 +22,15 @@ namespace VaultLoginAPI.Controllers
             string? rtnVal = null;
             if (request.Validate())
             {
-                JObject obj = JObject.Parse(_adminService.AddItemAsync(request).Result);
-                rtnVal = (string)JObject.Parse((string)obj["auth"])["client_token"];
+                AddItemResponse? response = _adminService.AddItem(request);
+                if (response.RequestID != null)
+                    rtnVal = response?.Auth?.ClientToken;
+                else
+                    Response.StatusCode = 403;
             }
             else
             {
-                Response.StatusCode = 403;
+                Response.StatusCode = 415;
             }
 
             return rtnVal;

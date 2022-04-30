@@ -1,28 +1,42 @@
-﻿namespace VaultLoginAPI.Services
+﻿using Newtonsoft.Json;
+using System.Text.RegularExpressions;
+using VaultLoginAPI.Models.VaultResponses;
+
+namespace VaultLoginAPI.Services
 {
     public class LoginService : ILoginService
     {
-        public async Task<string> GetKeyAsync(string key)
+        public string? GetKey(string? key, string? loginToken)
         {
 
             HttpClient client = new();
-            client.DefaultRequestHeaders.Add("X-Vault-Token", "hvs.ewFMNE2B983cTMo7J6ldmg6r");
-            var response = await client.GetAsync("http://127.0.0.1:8200/v1/sys/policy"/*, formContent*/);
-            return await response.Content.ReadAsStringAsync();
+            HttpRequestMessage message = new(HttpMethod.Get, "http://127.0.0.1:8200/v1/store/cred");
+            message.Headers.Add("X-Vault-Token", loginToken);
+            var result = client.Send(message);
+            string text = new StreamReader(result.Content.ReadAsStream()).ReadToEnd();
+            StoreGetResponse? response = JsonConvert.DeserializeObject<StoreGetResponse>(text);
+            string? respKey = null;
+            if(key != null)
+                respKey = response?.Data?[key];
+            return respKey;
         }
 
-        public async Task<List<string>> GetPermissionsAsync(string? UID)
+        public List<string> GetPermissions(string? UID, string? loginToken)
         {
             HttpClient client = new();
-            client.DefaultRequestHeaders.Add("X-Vault-Token", "hvs.ewFMNE2B983cTMo7J6ldmg6r");
-            var formContent = new FormUrlEncodedContent(new[]
-            {
-                new KeyValuePair<string, string>("policy", "path \"store/data/"+UID+"\" {\n  capabilities = [\"create\", \"update\"]\n}"),
-            });
-            var response = await client.GetAsync("http://127.0.0.1:8200/v1/sys/policy"/*, formContent*/);
-        
-            Console.WriteLine(await response.Content.ReadAsStringAsync());
-            return new();
+            HttpRequestMessage message = new(HttpMethod.Get, "http://127.0.0.1:8200/v1/store/data/" + UID);
+            message.Headers.Add("X-Vault-Token", loginToken);
+            var result = client.Send(message);
+            string text = new StreamReader(result.Content.ReadAsStream()).ReadToEnd();
+            StoreGetResponse? response = JsonConvert.DeserializeObject<StoreGetResponse>(text);
+
+            return BreakDownListResponse(response?.Data?["permissions"]);
+        }
+
+        private static List<string> BreakDownListResponse(string? response)
+        {
+            string newString = Regex.Replace(response ?? "", "[^A-Za-z0-9]", " ");
+            return new(newString.Split(" ", StringSplitOptions.RemoveEmptyEntries));
         }
     }
 }

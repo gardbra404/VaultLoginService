@@ -1,67 +1,76 @@
-﻿using Newtonsoft.Json;
+﻿
+using Newtonsoft.Json;
 using VaultLoginAPI.Models;
+using VaultLoginAPI.Models.VaultResponses;
 
 namespace VaultLoginAPI.Services
 {
     public class AdminService : IAdminService
     {
-        public async Task<string> AddItemAsync(NewItemRequest request)
+        public AddItemResponse? AddItem(NewItemRequest request)
         {
-            await RegisterPolicyAsync(request.UID, request.LoginToken);
-            
-            await RegisterPermissionsAsync(request.Permissions, request.LoginToken, request.UID);
+            RegisterPolicy(request.UID, request.LoginToken);
+            RegisterPermissions(request.Permissions, request.LoginToken, request.UID);
+            string resp = new StreamReader(CreateItemToken(request)).ReadToEnd();
+            return JsonConvert.DeserializeObject<AddItemResponse>(resp);
+        }
+
+        private static Stream CreateItemToken(NewItemRequest request)
+        {
             HttpClient client = new();
             client.DefaultRequestHeaders.Add("X-Vault-Token", request.LoginToken);
             List<string?> policies = new();
             policies.Add(request.UID);
             var formContent = new FormUrlEncodedContent(new[]
             {
-                new KeyValuePair<string, string>("policies", request.UID)
+                new KeyValuePair<string, string>("policies", request.UID ?? "")
             });
-
-            var response = await client.PostAsync("http://127.0.0.1:8200/v1/auth/token/create", formContent);
-
-            return await response.Content.ReadAsStringAsync();
-
+            HttpRequestMessage message = new(HttpMethod.Post, "http://127.0.0.1:8200/v1/auth/token/create");
+            message.Headers.Add("X-Vault-Token", request.LoginToken);
+            message.Content = formContent;
+            var result = client.Send(message);
+            return result.Content.ReadAsStream();
         }
 
-        private static async Task<string> RegisterPolicyAsync(string? policyName, string? loginToken)
+        private static void RegisterPolicy(string? policyName, string? loginToken)
         {
             HttpClient client = new();
             client.DefaultRequestHeaders.Add("X-Vault-Token", loginToken);
             var formContent = new FormUrlEncodedContent(new[]
             {
-                new KeyValuePair<string, string>("policy", "path \"store/data/"+policyName+"\" {\n  capabilities = [\"read\"]\n}\npath \"store/cred/\" {\n  capabilities = [\"read\"]\n}"),
+                new KeyValuePair<string, string>("policy", "path \"store/data/"+policyName+"\" {\n  capabilities = [\"read\"]\n}\npath \"store/cred\" {\n  capabilities = [\"read\"]\n}"),
             });
-            var result = await client.PutAsync("http://127.0.0.1:8200/v1/sys/policy/"+policyName, formContent);
-
-            return await result.Content.ReadAsStringAsync();
+            HttpRequestMessage message = new(HttpMethod.Put, "http://127.0.0.1:8200/v1/sys/policy/" + policyName);
+            message.Headers.Add("X-Vault-Token", loginToken);
+            message.Content = formContent;
+            client.Send(message);
         }
 
-        private static async Task<string> RegisterPermissionsAsync(List<string>? permissions, string? loginToken, string? uid)
+        private static void RegisterPermissions(List<string>? permissions, string? loginToken, string? uid)
         {
             HttpClient client = new();
             client.DefaultRequestHeaders.Add("X-Vault-Token", loginToken);
-            var formContent = new FormUrlEncodedContent(new[] { 
+            var formContent = new FormUrlEncodedContent(new[] {
                 new KeyValuePair<string, string>("permissions", JsonConvert.SerializeObject(permissions))
             });
 
-            var result = await client.PutAsync("http://127.0.0.1:8200/v1/store/data/" + uid, formContent);
-
-            return await result.Content.ReadAsStringAsync();
+            HttpRequestMessage message = new(HttpMethod.Post, "http://127.0.0.1:8200/v1/store/data/" + uid);
+            message.Headers.Add("X-Vault-Token", loginToken);
+            message.Content = formContent;
+            client.Send(message);
         }
 
-        public Task<string> AddSecretAsync(Secret secret)
+        public Task<string> AddSecret(Secret secret)
         {
             throw new NotImplementedException();
         }
 
-        public Task<string> DeleteItemAsync(string id)
+        public Task<string> DeleteItem(string id)
         {
             throw new NotImplementedException();
         }
 
-        public Task<string> UpdateItemAsync(ModifyItemRequest request)
+        public Task<string> UpdateItem(ModifyItemRequest request)
         {
             throw new NotImplementedException();
         }

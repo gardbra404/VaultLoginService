@@ -1,16 +1,17 @@
 ﻿using VaultLoginAPI.Models;
+using VaultLoginAPI.Models.VaultResponses;
 
 namespace VaultLoginAPI.Services
 {
     public interface IAdminService
     { 
 
-        public Task<string> AddItemAsync(NewItemRequest request);
+        public AddItemResponse? AddItem(NewItemRequest request);
 
-        public Task<string> UpdateItemAsync(ModifyItemRequest request);
+        public Task<string> UpdateItem(ModifyItemRequest request);
 
-        public Task<string> DeleteItemAsync(string id);
+        public Task<string> DeleteItem(string id);
 
-        public Task<string> AddSecretAsync(Secret secret);
+        public Task<string> AddSecret(Secret secret);
     }
 }

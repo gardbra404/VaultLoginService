@@ -3,8 +3,8 @@
     public interface ILoginService
     {
 
-        public Task<List<string>> GetPermissionsAsync(string? UID);
+        public List<string> GetPermissions(string? UID, string? loginToken);
 
-        public Task<string> GetKeyAsync(string key);
+        public string? GetKey(string? key, string? loginToken);
     }
 }

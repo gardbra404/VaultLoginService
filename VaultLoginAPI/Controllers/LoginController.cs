@@ -16,10 +16,28 @@ namespace VaultLoginAPI.Controllers
         }
 
         [HttpPost]
-        public async Task<string> GetKey(UserRequest request)
+        public string? GetKey(UserRequest request)
         {
-            var item = await _loginService.GetKeyAsync(request.Token);
-            return item;
+            bool allowed = false;
+            string? key = null;
+            List<string> permissions = _loginService.GetPermissions(request.UID, request.Token);
+            foreach (string permission in permissions)
+            {
+                if (permission == request.RequestedKey)
+                {
+                    allowed = true;
+                    break;
+                }
+            }
+            if (allowed)
+            {
+                key = _loginService.GetKey(request.RequestedKey, request.Token);
+                if (key == null)
+                    Response.StatusCode = 404;
+            }
+            else
+                Response.StatusCode = 403;
+            return key;
         }
     }
 }
