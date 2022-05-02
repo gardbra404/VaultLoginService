@@ -8,10 +8,10 @@ namespace VaultLoginAPI.Services
 
         public AddItemResponse? AddItem(NewItemRequest request);
 
-        public Task<string> UpdateItem(ModifyItemRequest request);
+        public bool UpdateItem(ModifyItemRequest request);
 
-        public Task<string> DeleteItem(string id);
+        public bool DeleteItem(DeleteItemRequest request);
 
-        public Task<string> AddSecret(Secret secret);
+        public string? AddSecret(Secret secret);
     }
 }

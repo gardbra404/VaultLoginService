@@ -23,7 +23,7 @@ namespace VaultLoginAPI.Controllers
             if (request.Validate())
             {
                 AddItemResponse? response = _adminService.AddItem(request);
-                if (response.RequestID != null)
+                if (response?.RequestID != null)
                     rtnVal = response?.Auth?.ClientToken;
                 else
                     Response.StatusCode = 403;
@@ -35,5 +35,47 @@ namespace VaultLoginAPI.Controllers
 
             return rtnVal;
         }
+
+        [HttpDelete("DeleteItem")]
+        public string? DeleteItemPolicy(DeleteItemRequest request)
+        {
+            string message;
+            if (_adminService.DeleteItem(request))
+            {
+                Response.StatusCode = 200;
+                message = string.Format("{0} has been successfully deleted", request.ItemId);
+            }
+            else
+            {
+                Response.StatusCode = 403;
+                message = "Forbidden";
+            }
+            return message;
+        }
+
+        [HttpPost("UpdateItem")]
+        public string? UpdateItemPolicy(ModifyItemRequest request)
+        {
+            string message;
+            if(_adminService.UpdateItem(request))
+            {
+                Response.StatusCode = 200;
+                message = string.Format("{0} has been successfully updated", request.Policy);
+            }
+            else
+            {
+                Response.StatusCode = 403;
+                message = "Forbidden";
+            }
+            return message;
+        }
+
+
+        [HttpPost("AddCred")]
+        public string? AddNewCredential(Secret secret)
+        {
+            return _adminService.AddSecret(secret);
+        }
+
     }
 }
