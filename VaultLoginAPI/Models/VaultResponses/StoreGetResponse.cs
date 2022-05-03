@@ -2,6 +2,9 @@
 
 namespace VaultLoginAPI.Models.VaultResponses
 {
+    /**
+     A model containing all of the information returned from a request to read from a secret store
+     */
     public class StoreGetResponse
     {
         [JsonProperty("request_id")]

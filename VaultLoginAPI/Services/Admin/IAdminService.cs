@@ -3,6 +3,9 @@ using VaultLoginAPI.Models.VaultResponses;
 
 namespace VaultLoginAPI.Services
 {
+    /**
+     An interface to describe the actions allowed by an admin user to modify credentials and their access.
+     */
     public interface IAdminService
     { 
 

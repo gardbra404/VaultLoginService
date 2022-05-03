@@ -1,5 +1,8 @@
 ﻿namespace VaultLoginAPI.Models
 {
+    /**
+     A model containing all of the information used to create an auth token for a UID.
+     */
     public class NewItemRequest
     {
 

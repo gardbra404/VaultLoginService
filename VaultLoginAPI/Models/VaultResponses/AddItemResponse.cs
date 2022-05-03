@@ -2,6 +2,9 @@
 
 namespace VaultLoginAPI.Models.VaultResponses
 {
+    /**
+     A model containing detailing some of the facets contained within a cault response to create a new token
+     */
     public class AddItemResponse
     {
         [JsonProperty("request_id")]

@@ -1,5 +1,8 @@
 ﻿namespace VaultLoginAPI.Models
 {
+    /**
+     A model containing all of the information used to modidy a UID and add/revoke access to credentials.
+     */
     public class ModifyItemRequest
     {
         public string? LoginToken { get; set; }

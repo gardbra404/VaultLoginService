@@ -1,5 +1,8 @@
 ﻿namespace VaultLoginAPI.Services
 {
+    /**
+     An interface to describe the functions required by a non-admin user to access their credentials
+     */
     public interface ILoginService
     {
 
