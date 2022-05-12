@@ -34,6 +34,7 @@ namespace VaultLoginAPI.Controllers
         {
             bool allowed = false;
             string? key = null;
+            request.RequestedKey = request.RequestedKey?.ToUpper();
             List<string> permissions = _loginService.GetPermissions(request.UID, request.Token);
             foreach (string permission in permissions)
             {

@@ -107,12 +107,14 @@ namespace VaultLoginAPI.Services
             var formContent = new FormUrlEncodedContent(new[] {
                 new KeyValuePair<string, string>("permissions", string.Join(',', permissions?.ConvertAll(x => x.ToUpper()) ?? new List<string>()))
             });
-            VaultRequestUtility.SendRequestToVault(
-                HttpMethod.Post,
+            var result = VaultRequestUtility.SendRequestToVault(
+                HttpMethod.Put,
                 "http://127.0.0.1:8200/v1/store/data/" + uid,
                 formContent,
                 loginToken
             );
+
+            //Console.WriteLine(new StreamReader(result.Content.ReadAsStream()).ReadToEnd());
         }
 
 
@@ -229,7 +231,8 @@ namespace VaultLoginAPI.Services
                 null,
                 request.LoginToken
             );
-            return (new StreamReader(result.Content.ReadAsStream()).ReadToEnd() == null);
+            string resp = new StreamReader(result.Content.ReadAsStream()).ReadToEnd();
+            return (resp?.Trim() == "");
         }
 
         /**
@@ -265,7 +268,7 @@ namespace VaultLoginAPI.Services
                 currentPermissions.AddRange(uniqueAdd);
                 foreach (string permission in uniqueDel)
                     currentPermissions.Remove(permission);
-                RegisterPermissions(currentPermissions, request.Policy, request.LoginToken);
+                RegisterPermissions(currentPermissions, request.LoginToken, request.Policy);
                 result = true;
             }
             return result;
